@@ -8,14 +8,14 @@
 
 #### **Mohamed bin Zayed University of AI, University College London, Aalto University, Linköping University, Australian National University**
 
-[![paper](https://img.shields.io/badge/arXiv-Paper-<COLOR>.svg)]()
-[![Model Zoo](https://img.shields.io/badge/Model%20Zoo-HuggingFace-blue)](#🧠-model-zoo)
+[![paper](https://img.shields.io/badge/arXiv-Paper-<COLOR>.svg)](https://arxiv.org/abs/2506.06281)
+[![Model Zoo](https://img.shields.io/badge/Model%20Zoo-HuggingFace-blue)](#-model-zoo)
 
 ---
 
 ## 📢 Latest Updates
 - **Jun-09-25**: 🚀 Initial release of **TerraFM codebase** and **pretrained models**
-- **Jun-09-25**: 📄 Paper released on arXiv: [arxiv link](). 🔥🔥
+- **Jun-09-25**: 📄 Paper released on arXiv: [arxiv link](https://arxiv.org/abs/2506.06281). 🔥🔥
 
 ---
 
@@ -168,7 +168,14 @@ Despite having significantly fewer parameters (120M vs. 300M), **TerraFM** achie
 ## 📜 Citation
 If you find our work and this repository useful, please consider giving our repo a star and citing our paper as follows:
 ```bibtex
-@article{
+@article{danish2025terrafmscalablefoundationmodel,
+      title={TerraFM: A Scalable Foundation Model for Unified Multisensor Earth Observation}, 
+      author={Muhammad Sohail Danish and Muhammad Akhtar Munir and Syed Roshaan Ali Shah and Muhammad Haris Khan and Rao Muhammad Anwer and Jorma Laaksonen and Fahad Shahbaz Khan and Salman Khan},
+      year={2025},
+      eprint={2506.06281},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2506.06281}, 
 }
 ```
 
