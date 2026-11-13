@@ -8,12 +8,16 @@
 
 #### **Mohamed bin Zayed University of AI, University College London, Aalto University, Linköping University, Australian National University**
 
+[![ICLR 2026](https://img.shields.io/badge/ICLR-2026-blue.svg)](https://arxiv.org/abs/2506.06281)
 [![paper](https://img.shields.io/badge/arXiv-Paper-<COLOR>.svg)](https://arxiv.org/abs/2506.06281)
 [![Model Zoo](https://img.shields.io/badge/Model%20Zoo-HuggingFace-blue)](#-model-zoo)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
 
 ## 📢 Latest Updates
+- **Nov-2026**: 🧩 Added the official input preprocessing (`normalize()` and pretraining statistics) to `terrafm.py`, fixed Sentinel-2 L2A stem selection (`is_l2a`), and added the MIT [LICENSE](LICENSE). See [Input preprocessing](#input-preprocessing).
+- **ICLR 2026**: 🎉 TerraFM has been accepted at **ICLR 2026**!
 - **Jun-09-25**: 🚀 Initial release of **TerraFM codebase** and **pretrained models**
 - **Jun-09-25**: 📄 Paper released on arXiv: [arxiv link](https://arxiv.org/abs/2506.06281). 🔥🔥
 
@@ -68,23 +72,44 @@ Overall architecture of TerraFM. It unifies student-teacher contrastive framewor
 TerraFM can be used directly via the `terrafm.py` module, which provides standalone implementations of the TerraFM-Base and TerraFM-Large models for easy integration into any codebase.
 
 ```python
-from terrafm import terrafm_base, terrafm_large
+from terrafm import terrafm_base, normalize
 import torch
 
-# Simulated input: 1 sample, 12 channels, 224×224 resolution (e.g., Sentinel-2 L2A)
-x = torch.randn(1, 12, 224, 224)
-
-# Load TerraFM-Base model
+# Load TerraFM-Base with pretrained weights
 model = terrafm_base()
+model.load_state_dict(torch.load("TerraFM-B.pth", map_location="cpu"))
+model.eval()
 
-# Load pretrained weights (e.g., TerraFM-B.pth)
-state_dict = torch.load("TerraFM-B.pth", map_location="cpu")
-msg = model.load_state_dict(state_dict, strict=False)
+# Sentinel-2 L2A: 12 bands (B01..B12 without B10), raw digital numbers (reflectance * 10000)
+x = torch.rand(1, 12, 224, 224) * 10000
+y = model(normalize(x, "s2_l2a"), is_l2a=True)     # CLS embedding, shape [1, 768]
 
-# Forward pass
-y = model(x)
-print(f"Output shape: {y.shape}")
+# Sentinel-2 L1C: same band order, use L1C statistics and the L1C stem
+y = model(normalize(x, "s2_l1c"), is_l2a=False)
+
+# Sentinel-1: 2 bands [VV, VH] in dB
+s1 = torch.randn(1, 2, 224, 224) * 5 - 15
+y = model(normalize(s1, "s1"))
 ```
+
+### Input preprocessing
+
+TerraFM expects inputs scaled as during pretraining. Use `normalize()` from `terrafm.py`; it applies, per band,
+
+`x_norm = (x - (mean - 2·std)) / (4·std)`
+
+with the pretraining statistics stored in `terrafm.STATS`:
+
+| Input | Channels (order) | Raw units | `normalize(..., sensor)` | `is_l2a` |
+|---|---|---|---|---|
+| Sentinel-2 L2A | B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B11, B12 | digital numbers (reflectance × 10000) | `"s2_l2a"` | `True` |
+| Sentinel-2 L1C | same as above | digital numbers (reflectance × 10000) | `"s2_l1c"` | `False` |
+| Sentinel-1 | VV, VH | dB | `"s1"` | – |
+
+- Pick the statistics and `is_l2a` from the product level of your data; they select different patch-embedding stems.
+- If your data is in 0–1 reflectance, multiply by 10000 first.
+- If a band is missing, normalize the available bands and set the missing channel to 0.
+- Do not replace these statistics with per-dataset mean/std z-scoring; this changes the input range the model was trained on and lowers downstream performance.
 ---
 
 
@@ -168,19 +193,23 @@ Despite having significantly fewer parameters (120M vs. 300M), **TerraFM** achie
 ## 📜 Citation
 If you find our work and this repository useful, please consider giving our repo a star and citing our paper as follows:
 ```bibtex
-@article{danish2025terrafmscalablefoundationmodel,
-      title={TerraFM: A Scalable Foundation Model for Unified Multisensor Earth Observation}, 
+@inproceedings{danish2026terrafm,
+      title={TerraFM: A Scalable Foundation Model for Unified Multisensor Earth Observation},
       author={Muhammad Sohail Danish and Muhammad Akhtar Munir and Syed Roshaan Ali Shah and Muhammad Haris Khan and Rao Muhammad Anwer and Jorma Laaksonen and Fahad Shahbaz Khan and Salman Khan},
-      year={2025},
+      booktitle={The Fourteenth International Conference on Learning Representations (ICLR)},
+      year={2026},
       eprint={2506.06281},
       archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2506.06281}, 
+      url={https://arxiv.org/abs/2506.06281},
 }
 ```
 
 
 
+
+## ⚖️ License
+
+The TerraFM code and released model weights are available under the [MIT License](LICENSE). Parts of `terrafm.py` are adapted from [DINO](https://github.com/facebookresearch/dino) (Apache License 2.0).
 
 ## 📨 Contact
 If you have any questions, please create an issue on this repository or contact at muhammad.sohail@mbzuai.ac.ae.
